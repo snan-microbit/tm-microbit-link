@@ -31,10 +31,32 @@ namespace iaMachine {
     });
 
     /**
-     * Se ejecuta cuando la IA detecta una clase específica.
+     * Se ejecuta cuando se establece conexion bluetooth
+     */
+    //% blockId=ia_on_conected block="Al conectar a la app"
+    //% weight=100
+    export function alConectar(handler: () => void) {
+        // Registramos un manejador de eventos que solo se activa 
+        // cuando se conecta a la app
+        bluetooth.onBluetoothConnected(handler);
+    }
+
+    /**
+     * Se ejecuta cuando se finaliza la conexion bluetooth
+     */
+    //% blockId=ia_on_conected block="Al desconectar de la app"
+    //% weight=100
+    export function alDesconectar(handler: () => void) {
+        // Registramos un manejador de eventos que solo se activa 
+        // cuando se conecta a la app
+        bluetooth.onBluetoothDisconnected(handler);
+    }
+
+    /**
+     * Se ejecuta cuando se recibe una clase especifica por bluetooth.
      * @param clase Nombre de la clase configurada en Teachable Machine, eg: "clase1"
      */
-    //% blockId=ia_on_class block="al detectar clase %clase"
+    //% blockId=ia_on_class block="Al detectar clase %clase"
     //% weight=100
     export function alDetectarClase(clase: string, handler: () => void) {
         // Registramos un manejador de eventos que solo se activa 
@@ -54,7 +76,7 @@ namespace iaMachine {
     /**
      * Compara si la clase detectada es igual a una cadena.
      */
-    //% blockId=ia_is_class block="¿la clase es %clase?"
+    //% blockId=ia_is_class block="la clase es %clase"
     //% weight=80
     export function esClase(clase: string): boolean {
         return ultimaClase === clase;
