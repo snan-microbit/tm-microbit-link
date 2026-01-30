@@ -1,7 +1,7 @@
 /**
- * Extensión para IA con Teachable Machine vía Bluetooth UART
+ * Extensión para vincular Teachable Machine con micro:bit
  */
-//% weight=50 color=#2ecc71 icon="\uf0e8" block="IA Teachable Machine"
+//% weight=50 color=#2ecc71 icon="\uf0e8" block="TM-micro:bit-Link"
 namespace iaMachine {
     let ultimaClase = "ninguna";
     const IA_EVENT_ID = 9100; // ID único para los eventos de esta extensión
@@ -14,7 +14,7 @@ namespace iaMachine {
         }
         return Math.abs(hash);
     }
-    
+
     // Esta línea inicia el servicio automáticamente al cargar la extensión
     bluetooth.startUartService();
   
