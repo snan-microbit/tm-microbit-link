@@ -6,9 +6,18 @@ namespace iaMachine {
     let ultimaClase = "ninguna";
     const IA_EVENT_ID = 9100; // ID único para los eventos de esta extensión
 
+    // Función sencilla para convertir texto a número (Hash)
+    function generarId(texto: string): number {
+        let hash = 0;
+        for (let i = 0; i < texto.length; i++) {
+            hash = Math.imul(31, hash) + texto.charCodeAt(i) | 0;
+        }
+        return Math.abs(hash);
+    }
+    
     // Esta línea inicia el servicio automáticamente al cargar la extensión
     bluetooth.startUartService();
-
+  
     // Procesador de datos en segundo plano
     bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
         let datos = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine));
@@ -17,7 +26,7 @@ namespace iaMachine {
         if (datos.length > 0 && datos !== ultimaClase) {
             ultimaClase = datos;
             // Disparamos un evento global. El valor es un hash del string para identificarlo.
-            control.raiseEvent(IA_EVENT_ID, control.createSpecificEvent(ultimaClase));
+            control.raiseEvent(IA_EVENT_ID, generarId(ultimaClase));
         }
     });
 
@@ -30,7 +39,7 @@ namespace iaMachine {
     export function alDetectarClase(clase: string, handler: () => void) {
         // Registramos un manejador de eventos que solo se activa 
         // cuando el hash de la clase coincide.
-        control.onEvent(IA_EVENT_ID, control.createSpecificEvent(clase), handler);
+        control.onEvent(IA_EVENT_ID, generarId(clase), handler);
     }
 
     /**
