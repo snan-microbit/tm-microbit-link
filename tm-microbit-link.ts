@@ -44,7 +44,7 @@ namespace iaMachine {
     /**
      * Se ejecuta cuando se finaliza la conexion bluetooth
      */
-    //% blockId=ia_on_conected block="Al desconectar de la app"
+    //% blockId=ia_on_disconected block="Al desconectar de la app"
     //% weight=100
     export function alDesconectar(handler: () => void) {
         // Registramos un manejador de eventos que solo se activa 
