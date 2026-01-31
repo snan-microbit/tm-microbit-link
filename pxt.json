@@ -9,8 +9,7 @@
     "files": [
         "main.blocks",
         "tm-microbit-link.ts",
-        "README.md",
-        "main.ts"
+        "README.md"
     ],
     "testFiles": [
         "test.ts"
