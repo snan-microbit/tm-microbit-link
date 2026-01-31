@@ -7,7 +7,6 @@
         "bluetooth": "*"
     },
     "files": [
-        "main.blocks",
         "tm-microbit-link.ts",
         "README.md"
     ],
