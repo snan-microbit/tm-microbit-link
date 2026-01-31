@@ -25,8 +25,9 @@ namespace iaMachine {
 
         if (datos.length > 0 && datos !== ultimaClase) {
             ultimaClase = datos;
-            // Disparamos un evento global. El valor es un hash del string para identificarlo.
-            control.raiseEvent(IA_EVENT_ID, generarId(ultimaClase));
+            control.runInParallel(function() {
+                control.raiseEvent(IA_EVENT_ID, generarId(ultimaClase));
+            });
         }
     });
 
