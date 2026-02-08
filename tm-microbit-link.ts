@@ -25,9 +25,7 @@ namespace iaMachine {
 
         if (datos.length > 0 && datos !== ultimaClase) {
             ultimaClase = datos;
-            control.runInParallel(function() {
                 control.raiseEvent(IA_EVENT_ID, generarId(ultimaClase));
-            });
         }
     });
 
