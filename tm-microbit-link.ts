@@ -4,12 +4,11 @@
 //% weight=50 color=#2ecc71 icon="\uf0e8" block="TM-micro:bit-Link"
 namespace iaMachine {
     let ultimaClase = "ninguna";
-    const IA_EVENT_ID = 9100; // ID único para los eventos de esta extensión
+    let certezaActual = 0;
+    const IA_EVENT_ID = 9100;
 
-    // Esta línea inicia el servicio automáticamente al cargar la extensión
     bluetooth.startUartService();
 
-    // Función sencilla para convertir texto a número (Hash)
     function generarId(texto: string): number {
         let hash = 0;
         for (let i = 0; i < texto.length; i++) {
@@ -18,49 +17,40 @@ namespace iaMachine {
         return Math.abs(hash);
     }
   
-    // Procesador de datos en segundo plano
+    // PROCESADOR DE DATOS: Ahora entiende el formato "Clase#Certeza"
     bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
         let datos = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine));
         datos = datos.trim();
 
-        if (datos.length > 0 && datos !== ultimaClase) {
-            ultimaClase = datos;
+        if (datos.length > 0) {
+            // Separamos el texto por el carácter '#'
+            let partes = datos.split("#");
+            if (partes.length === 2) {
+                ultimaClase = partes[0];
+                certezaActual = parseInt(partes[1]);
+                
+                // Disparamos el evento con el ID de la clase
+                // Nota: El filtrado por umbral se hace en el bloque 'alDetectarClase'
                 control.raiseEvent(IA_EVENT_ID, generarId(ultimaClase));
+            }
         }
     });
 
     /**
-     * Se ejecuta cuando se establece conexion bluetooth
+     * Se ejecuta cuando se recibe una clase específica y supera el umbral.
+     * @param clase Nombre de la clase, eg: "clase1"
+     * @param umbral Porcentaje mínimo (0-100), eg: 80
      */
-    //% blockId=ia_on_conected block="Al conectar a la app"
+    //% blockId=ia_on_class_threshold 
+    //% block="Al detectar clase %clase con certeza > %umbral %"
+    //% umbral.min=0 umbral.max=100 umbral.defl=80
     //% weight=100
-    export function alConectar(handler: () => void) {
-        // Registramos un manejador de eventos que solo se activa 
-        // cuando se conecta a la app
-        bluetooth.onBluetoothConnected(handler);
-    }
-
-    /**
-     * Se ejecuta cuando se finaliza la conexion bluetooth
-     */
-    //% blockId=ia_on_disconected block="Al desconectar de la app"
-    //% weight=100
-    export function alDesconectar(handler: () => void) {
-        // Registramos un manejador de eventos que solo se activa 
-        // cuando se conecta a la app
-        bluetooth.onBluetoothDisconnected(handler);
-    }
-
-    /**
-     * Se ejecuta cuando se recibe una clase especifica por bluetooth.
-     * @param clase Nombre de la clase configurada en Teachable Machine, eg: "clase1"
-     */
-    //% blockId=ia_on_class block="Al detectar clase %clase"
-    //% weight=100
-    export function alDetectarClase(clase: string, handler: () => void) {
-        // Registramos un manejador de eventos que solo se activa 
-        // cuando el hash de la clase coincide.
-        control.onEvent(IA_EVENT_ID, generarId(clase), handler);
+    export function alDetectarClase(clase: string, umbral: number, handler: () => void) {
+        control.onEvent(IA_EVENT_ID, generarId(clase), function() {
+            if (certezaActual >= umbral) {
+                handler();
+            }
+        });
     }
 
     /**
@@ -73,11 +63,22 @@ namespace iaMachine {
     }
 
     /**
-     * Compara si la clase detectada es igual a una cadena.
+     * Devuelve la certeza de la última detección (0-100).
      */
-    //% blockId=ia_is_class block="la clase es %clase"
-    //% weight=80
-    export function esClase(clase: string): boolean {
-        return ultimaClase === clase;
+    //% blockId=ia_get_certainty block="certeza detectada"
+    //% weight=85
+    export function certezaDetectada(): number {
+        return certezaActual;
+    }
+
+    // --- Bloques de Conexión (sin cambios) ---
+    //% blockId=ia_on_conected block="Al conectar a la app"
+    export function alConectar(handler: () => void) {
+        bluetooth.onBluetoothConnected(handler);
+    }
+
+    //% blockId=ia_on_disconected block="Al desconectar de la app"
+    export function alDesconectar(handler: () => void) {
+        bluetooth.onBluetoothDisconnected(handler);
     }
 }
