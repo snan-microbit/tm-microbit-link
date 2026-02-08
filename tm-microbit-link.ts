@@ -6,6 +6,9 @@ namespace iaMachine {
     let ultimaClase = "ninguna";
     const IA_EVENT_ID = 9100; // ID único para los eventos de esta extensión
 
+    // Esta línea inicia el servicio automáticamente al cargar la extensión
+    bluetooth.startUartService();
+
     // Función sencilla para convertir texto a número (Hash)
     function generarId(texto: string): number {
         let hash = 0;
@@ -14,9 +17,6 @@ namespace iaMachine {
         }
         return Math.abs(hash);
     }
-
-    // Esta línea inicia el servicio automáticamente al cargar la extensión
-    bluetooth.startUartService();
   
     // Procesador de datos en segundo plano
     bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
