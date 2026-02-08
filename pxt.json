@@ -1,5 +1,6 @@
 {
-    "name": "TM-micro:bit-Link",
+    "name": "tm-micro:bit-link",
+    "version": "0.0.1",
     "description": "",
     "dependencies": {
         "core": "*",
