@@ -17,37 +17,39 @@ namespace iaMachine {
         return Math.abs(hash);
     }
   
-    // PROCESADOR DE DATOS: Ahora entiende el formato "Clase#Certeza"
+// PROCESADOR DE DATOS: Corregido
     bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
         let datos = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine));
         datos = datos.trim();
 
         if (datos.length > 0) {
-            // Separamos el texto por el carácter '#'
             let partes = datos.split("#");
             if (partes.length === 2) {
-                ultimaClase = partes[0];
-                certezaActual = parseInt(partes[1]);
+                // Importante: No usamos variables globales para la validación inmediata
+                let claseRecibida = partes[0];
+                let certezaRecibida = parseInt(partes[1]);
                 
-                // Disparamos el evento con el ID de la clase
-                // Nota: El filtrado por umbral se hace en el bloque 'alDetectarClase'
-                control.raiseEvent(IA_EVENT_ID, generarId(ultimaClase));
+                // Actualizamos las globales para los bloques de consulta
+                ultimaClase = claseRecibida;
+                certezaActual = certezaRecibida;
+                
+                // Lanzamos el evento general
+                control.raiseEvent(IA_EVENT_ID, generarId(claseRecibida));
             }
         }
     });
 
     /**
      * Se ejecuta cuando se recibe una clase específica y supera el umbral.
-     * @param clase Nombre de la clase, eg: "clase1"
-     * @param umbral Porcentaje mínimo (0-100), eg: 80
      */
     //% blockId=ia_on_class_threshold 
-    //% block="Al detectar clase %clase con certeza > %umbral"
-    //% umbral.min=0 umbral.max=100
+    //% block="Al detectar clase %clase con certeza > %umbral %"
+    //% umbral.min=0 umbral.max=100 umbral.defl=80
     //% weight=100
     export function alDetectarClase(clase: string, umbral: number, handler: () => void) {
         control.onEvent(IA_EVENT_ID, generarId(clase), function() {
-            if (certezaActual >= umbral) {
+            // Esta validación ahora será más fiable
+            if (certezaActual >= umbral && ultimaClase === clase) {
                 handler();
             }
         });
