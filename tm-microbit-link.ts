@@ -42,8 +42,8 @@ namespace iaMachine {
      * @param umbral Porcentaje mínimo (0-100), eg: 80
      */
     //% blockId=ia_on_class_threshold 
-    //% block="Al detectar clase %clase con certeza > %umbral %"
-    //% umbral.min=0 umbral.max=100 umbral.defl=80
+    //% block="Al detectar clase %clase con certeza > %umbral"
+    //% umbral.min=0 umbral.max=100
     //% weight=100
     export function alDetectarClase(clase: string, umbral: number, handler: () => void) {
         control.onEvent(IA_EVENT_ID, generarId(clase), function() {
