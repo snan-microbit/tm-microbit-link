@@ -6,6 +6,7 @@ namespace iaMachine {
     let ultimaClase = "ninguna";
     let certezaActual = 0;
     const IA_EVENT_ID = 9100;
+    let procesandoEvento = false;
 
     bluetooth.startUartService();
 
@@ -47,9 +48,15 @@ namespace iaMachine {
     //% umbral.min=0 umbral.max=100 umbral.defl=80
     //% weight=100
     export function alDetectarClase(clase: string, umbral: number, handler: () => void) {
-        control.onEvent(IA_EVENT_ID, generarId(clase), function() {    
+        control.onEvent(IA_EVENT_ID, generarId(clase), function() {
+            // Si ya estamos procesando un handler, ignoramos los eventos nuevos
+            // Esto evita que se acumulen en la memoria
+            if (procesandoEvento) return; 
+    
             if (certezaActual >= umbral && ultimaClase === clase) {
+                procesandoEvento = true; // Bloqueamos
                 handler();
+                procesandoEvento = false; // Liberamos al terminar
             }
         });
     }
