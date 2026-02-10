@@ -5,6 +5,7 @@
 namespace iaMachine {
     let ultimaClase = "ninguna";
     let certezaActual = 0;
+    let procesandoEvento = false;
     const IA_EVENT_ID = 9100;
 
     bluetooth.startUartService();
