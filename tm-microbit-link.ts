@@ -62,6 +62,26 @@ namespace iaMachine {
     }
 
     /**
+    * Se ejecuta cuando se detecta cualquier clase que supere el umbral.
+    */
+    //% blockId=ia_on_any_class 
+    //% block="Al detectar cualquier clase con certeza > %umbral"
+    //% umbral.min=0 umbral.max=100 umbral.defl=80
+    //% weight=95
+    export function alDetectarCualquierClase(umbral: number, handler: () => void) {
+        // Usamos 0 para escuchar todos los eventos del ID especificado
+        control.onEvent(IA_EVENT_ID, 0, function () {
+            if (procesandoEvento) return;
+
+            if (certezaActual >= umbral) {
+                procesandoEvento = true;
+                handler();
+                procesandoEvento = false;
+            }
+        });
+    }
+
+    /**
      * Devuelve el nombre de la última clase recibida.
      */
     //% blockId=ia_get_class block="clase detectada"
