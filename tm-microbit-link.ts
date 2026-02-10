@@ -48,9 +48,14 @@ namespace iaMachine {
     //% weight=100
     export function alDetectarClase(clase: string, umbral: number, handler: () => void) {
         control.onEvent(IA_EVENT_ID, generarId(clase), function() {
-            // Esta validación ahora será más fiable
+            // Si ya estamos procesando un handler, ignoramos los eventos nuevos
+            // Esto evita que se acumulen en la memoria
+            if (procesandoEvento) return; 
+    
             if (certezaActual >= umbral && ultimaClase === clase) {
+                procesandoEvento = true; // Bloqueamos
                 handler();
+                procesandoEvento = false; // Liberamos al terminar
             }
         });
     }
