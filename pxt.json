@@ -10,6 +10,7 @@
     },
     "files": [
         "tm-microbit-link.ts",
+        "main.ts",
         "README.md"
     ],
     "testFiles": [
