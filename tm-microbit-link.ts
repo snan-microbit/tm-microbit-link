@@ -7,6 +7,7 @@ namespace iaMachine {
     let certezaActual = 0;
     const IA_EVENT_ID = 9100;
     let procesandoEvento = false;
+    let autoConfirmar = false;  // Nuevo: para modo controlado
 
     bluetooth.startUartService();
 
@@ -18,7 +19,7 @@ namespace iaMachine {
         return Math.abs(hash);
     }
   
-// PROCESADOR DE DATOS: Corregido
+    // PROCESADOR DE DATOS
     bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
         let datos = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine));
         datos = datos.trim();
@@ -26,7 +27,6 @@ namespace iaMachine {
         if (datos.length > 0) {
             let partes = datos.split("#");
             if (partes.length === 2) {
-                // Importante: No usamos variables globales para la validación inmediata
                 let claseRecibida = partes[0];
                 let certezaRecibida = parseInt(partes[1]);
                 
@@ -49,14 +49,17 @@ namespace iaMachine {
     //% weight=100
     export function alDetectarClase(clase: string, umbral: number, handler: () => void) {
         control.onEvent(IA_EVENT_ID, generarId(clase), function() {
-            // Si ya estamos procesando un handler, ignoramos los eventos nuevos
-            // Esto evita que se acumulen en la memoria
-            if (procesandoEvento) return; 
+            if (procesandoEvento) return;
     
             if (certezaActual >= umbral && ultimaClase === clase) {
-                procesandoEvento = true; // Bloqueamos
+                procesandoEvento = true;
                 handler();
-                procesandoEvento = false; // Liberamos al terminar
+                procesandoEvento = false;
+                
+                // Auto-confirmar si está habilitado (para modo controlado)
+                if (autoConfirmar) {
+                    bluetooth.uartWriteString("OK\n");
+                }
             }
         });
     }
@@ -69,7 +72,6 @@ namespace iaMachine {
     //% umbral.min=0 umbral.max=100 umbral.defl=80
     //% weight=95
     export function alDetectarCualquierClase(umbral: number, handler: () => void) {
-        // Usamos 0 para escuchar todos los eventos del ID especificado
         control.onEvent(IA_EVENT_ID, 0, function () {
             if (procesandoEvento) return;
 
@@ -77,6 +79,11 @@ namespace iaMachine {
                 procesandoEvento = true;
                 handler();
                 procesandoEvento = false;
+                
+                // Auto-confirmar si está habilitado
+                if (autoConfirmar) {
+                    bluetooth.uartWriteString("OK\n");
+                }
             }
         });
     }
@@ -84,7 +91,8 @@ namespace iaMachine {
     /**
      * Devuelve el nombre de la última clase recibida.
      */
-    //% blockId=ia_get_class block="clase detectada"
+    //% blockId=ia_get_class 
+    //% block="clase detectada"
     //% weight=90
     export function claseDetectada(): string {
         return ultimaClase;
@@ -93,19 +101,63 @@ namespace iaMachine {
     /**
      * Devuelve la certeza de la última detección (0-100).
      */
-    //% blockId=ia_get_certainty block="certeza detectada"
+    //% blockId=ia_get_certainty 
+    //% block="certeza detectada"
     //% weight=85
     export function certezaDetectada(): number {
         return certezaActual;
     }
 
-    // --- Bloques de Conexión (sin cambios) ---
-    //% blockId=ia_on_conected block="Al conectar a la app"
+    /**
+     * Habilitar modo controlado (envía confirmación automática a la app)
+     */
+    //% blockId=ia_enable_flow_control
+    //% block="Habilitar modo controlado"
+    //% weight=80
+    //% advanced=true
+    export function habilitarModoControlado() {
+        autoConfirmar = true;
+    }
+
+    /**
+     * Deshabilitar modo controlado
+     */
+    //% blockId=ia_disable_flow_control
+    //% block="Deshabilitar modo controlado"
+    //% weight=79
+    //% advanced=true
+    export function deshabilitarModoControlado() {
+        autoConfirmar = false;
+    }
+
+    /**
+     * Enviar confirmación manual a la app (solo para modo controlado)
+     */
+    //% blockId=ia_send_ready
+    //% block="Enviar señal de listo"
+    //% weight=78
+    //% advanced=true
+    export function enviarListo() {
+        bluetooth.uartWriteString("OK\n");
+    }
+
+    // --- Bloques de Conexión ---
+    /**
+     * Se ejecuta cuando se conecta a la app
+     */
+    //% blockId=ia_on_connected 
+    //% block="Al conectar a la app"
+    //% weight=70
     export function alConectar(handler: () => void) {
         bluetooth.onBluetoothConnected(handler);
     }
 
-    //% blockId=ia_on_disconected block="Al desconectar de la app"
+    /**
+     * Se ejecuta cuando se desconecta de la app
+     */
+    //% blockId=ia_on_disconnected 
+    //% block="Al desconectar de la app"
+    //% weight=69
     export function alDesconectar(handler: () => void) {
         bluetooth.onBluetoothDisconnected(handler);
     }
