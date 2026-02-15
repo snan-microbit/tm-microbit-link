@@ -1,6 +1,6 @@
 {
     "name": "tm-micro:bit-link",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "Extensión para vincular modelos de Teachable Machine con micro:bit vía Bluetooth. Recibe predicciones de ML en tiempo real desde la app web.",
     "license": "MIT",
     "author": "snan-microbit",
